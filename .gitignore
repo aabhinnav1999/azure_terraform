@@ -1,5 +1,11 @@
+
+# terraform files
 *.tfstate
 *.tfstate.backup
 .terraform/
 .terraform.lock.hcl
+.terraform.*
+
+
+# other files
 vm/
