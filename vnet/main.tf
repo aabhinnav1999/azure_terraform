@@ -13,13 +13,13 @@ provider "azurerm" {
 
 # Create a resource group
 resource "azurerm_resource_group" "example" {
-    name     = "vnet-resource-group-1401"
+    name     = "vnet-resource-group-1601"
     location = "north europe"
 }   
 
 # Create a virtual network
 resource "azurerm_virtual_network" "example" {
-    name                = "demo-vnet-1401"
+    name                = "demo-vnet-1601"
     address_space       = ["10.0.0.0/16"]
     location            = azurerm_resource_group.example.location
     resource_group_name = azurerm_resource_group.example.name   
@@ -49,4 +49,13 @@ resource "azurerm_subnet" "subnet2" {
     resource_group_name  = azurerm_resource_group.example.name
     virtual_network_name = azurerm_virtual_network.example.name
     address_prefixes     = ["10.0.2.0/24"]
+}
+
+# Create a public IP address
+resource "azurerm_public_ip" "example" {
+  name                = "example-public-ip-1601"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
 }
