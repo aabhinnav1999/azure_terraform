@@ -13,13 +13,13 @@ provider "azurerm" {
 
 # Create a resource group
 resource "azurerm_resource_group" "example" {
-    name     = "vnet-resource-group-1601"
+    name     = "vnet-resource-group-1801"
     location = "north europe"
 }   
 
 # Create a virtual network
 resource "azurerm_virtual_network" "example" {
-    name                = "demo-vnet-1601"
+    name                = "demo-vnet-1801"
     address_space       = ["10.0.0.0/16"]
     location            = azurerm_resource_group.example.location
     resource_group_name = azurerm_resource_group.example.name   
@@ -53,9 +53,23 @@ resource "azurerm_subnet" "subnet2" {
 
 # Create a public IP address
 resource "azurerm_public_ip" "example" {
-  name                = "example-public-ip-1601"
+  name                = "example-public-ip-1801"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
   allocation_method   = "Static"
   sku                 = "Standard"
+}
+
+# create a bastion host
+resource "azurerm_bastion_host" "example" {
+  name                = "example-bastion-1801"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  dns_name            = "example-bastion-1801"
+
+  ip_configuration {
+    name                 = "example-ip-config-1801"
+    subnet_id            = azurerm_subnet.subnet1.id
+    public_ip_address_id = azurerm_public_ip.example.id
+  }
 }
