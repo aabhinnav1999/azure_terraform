@@ -11,15 +11,22 @@ provider "azurerm" {
   features {}
 }
 
+locals {
+  vm_os = "windows" # change to "linux" for linux VM
+
+  nsg_port = local.vm_os == "windows" ? 3389 : 22
+  nsg_name = local.vm_os == "windows" ? "allow-rdp" : "allow-ssh"
+}
+
 # create a resource group
 resource "azurerm_resource_group" "example" {
-  name     = "vm-resource-group-2201"
+  name     = "vm-resource-group-2301"
   location = "north europe"
 }
 
 # create a virtual network
 resource "azurerm_virtual_network" "example" {
-  name                = "vm-vnet-2201"
+  name                = "vm-vnet-2301"
   address_space       = ["10.0.0.0/16"]
   location            = "north europe"
   resource_group_name = azurerm_resource_group.example.name
@@ -27,7 +34,7 @@ resource "azurerm_virtual_network" "example" {
 
 # create a subnet
 resource "azurerm_subnet" "example" {
-  name                 = "vm-subnet-2201"
+  name                 = "vm-subnet-2301"
   resource_group_name  = azurerm_resource_group.example.name
   virtual_network_name = azurerm_virtual_network.example.name
   address_prefixes     = ["10.0.9.0/24"]
@@ -35,7 +42,7 @@ resource "azurerm_subnet" "example" {
 
 # create a public IP address
 resource "azurerm_public_ip" "example" {
-  name                = "example-public-ip-2201"
+  name                = "example-public-ip-2301"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
   allocation_method   = "Static"
@@ -44,7 +51,7 @@ resource "azurerm_public_ip" "example" {
 
 # create a network interface
 resource "azurerm_network_interface" "example" {
-  name                = "example-nic-2201"
+  name                = "example-nic-2301"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 
@@ -57,20 +64,46 @@ resource "azurerm_network_interface" "example" {
   }
 }
 
-# create a virtual machine
-resource "azurerm_linux_virtual_machine" "example" {
-  name                            = "example-vm-2201"
-  resource_group_name             = azurerm_resource_group.example.name
-  location                        = azurerm_resource_group.example.location
-  size                            = "Standard_D2alds_v6"
-  admin_username                  = "username"
-  disable_password_authentication = false
+# create a virtual machine (linux)
+# resource "azurerm_linux_virtual_machine" "example" {
+#   name                            = "example-vm-2301"
+#   resource_group_name             = azurerm_resource_group.example.name
+#   location                        = azurerm_resource_group.example.location
+#   size                            = "Standard_D2alds_v6"
+#   admin_username                  = "azureuser"
+#   disable_password_authentication = false
+
+#   network_interface_ids = [
+#     azurerm_network_interface.example.id
+#   ]
+
+#   admin_password = "Password1234!"
+
+#   os_disk {
+#     caching              = "ReadWrite"
+#     storage_account_type = "Standard_LRS"
+#   }
+
+#   source_image_reference {
+#     publisher = "Canonical"
+#     offer     = "ubuntu-24_04-lts"
+#     sku       = "ubuntu-pro"
+#     version   = "latest"
+#   }
+# }
+
+# create a virtual machine (windows)
+resource "azurerm_windows_virtual_machine" "example" {
+  name                = "example-vm-2301"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  size                = "Standard_D2alds_v6"
+  admin_username      = "azureuser"
+  admin_password      = "Password1234!"
 
   network_interface_ids = [
     azurerm_network_interface.example.id
   ]
-
-  admin_password = "password"
 
   os_disk {
     caching              = "ReadWrite"
@@ -78,27 +111,27 @@ resource "azurerm_linux_virtual_machine" "example" {
   }
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "ubuntu-24_04-lts"
-    sku       = "ubuntu-pro"
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2025-datacenter-g2"
     version   = "latest"
   }
 }
 
 # create a network security group
 resource "azurerm_network_security_group" "example" {
-  name                = "example-nsg-2201"
+  name                = "example-nsg-2301"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 
   security_rule {
-    name                       = "SSH"
+    name                       = local.nsg_name
     priority                   = 1001
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
-    destination_port_range     = "22"
+    destination_port_range     = local.nsg_port
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
