@@ -13,13 +13,13 @@ provider "azurerm" {
 
 # Create a resource group
 resource "azurerm_resource_group" "example" {
-    name     = "vnet-resource-group-1801"
+    name     = "vnet-resource-group-0602"
     location = "north europe"
 }   
 
 # Create a virtual network
 resource "azurerm_virtual_network" "example" {
-    name                = "demo-vnet-1801"
+    name                = "demo-vnet-0602"
     address_space       = ["10.0.0.0/16"]
     location            = azurerm_resource_group.example.location
     resource_group_name = azurerm_resource_group.example.name   
@@ -52,24 +52,50 @@ resource "azurerm_subnet" "subnet2" {
 }
 
 # Create a public IP address
-resource "azurerm_public_ip" "example" {
-  name                = "example-public-ip-1801"
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
+# resource "azurerm_public_ip" "example" {
+#   name                = "example-public-ip-0602"
+#   location            = azurerm_resource_group.example.location
+#   resource_group_name = azurerm_resource_group.example.name
+#   allocation_method   = "Static"
+#   sku                 = "Standard"
+# }
 
 # create a bastion host
-resource "azurerm_bastion_host" "example" {
-  name                = "example-bastion-1801"
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
-  dns_name            = "example-bastion-1801"
+# resource "azurerm_bastion_host" "example" {
+#   name                = "example-bastion-0602"
+#   location            = azurerm_resource_group.example.location
+#   resource_group_name = azurerm_resource_group.example.name
+#   dns_name            = "example-bastion-0602"
 
-  ip_configuration {
-    name                 = "example-ip-config-1801"
-    subnet_id            = azurerm_subnet.subnet1.id
-    public_ip_address_id = azurerm_public_ip.example.id
-  }
+#   ip_configuration {
+#     name                 = "example-ip-config-0602"
+#     subnet_id            = azurerm_subnet.subnet1.id
+#     public_ip_address_id = azurerm_public_ip.example.id
+#   }
+# }
+
+# virtual network peering
+resource "azurerm_virtual_network" "example2" {
+    name                = "demo-vnet2-0602"
+    address_space       = ["10.1.0.0/16"]
+    location            = azurerm_resource_group.example.location
+    resource_group_name = azurerm_resource_group.example.name   
+}
+
+resource "azurerm_virtual_network_peering" "example-1" {
+    name                      = "example1toexample2"
+    resource_group_name       = azurerm_resource_group.example.name
+    virtual_network_name      = azurerm_virtual_network.example.name
+    remote_virtual_network_id = azurerm_virtual_network.example2.id
+    allow_forwarded_traffic   = true
+    allow_virtual_network_access = true 
+}
+
+resource "azurerm_virtual_network_peering" "example-2" {
+    name                      = "example2toexample1"
+    resource_group_name       = azurerm_resource_group.example.name
+    virtual_network_name      = azurerm_virtual_network.example2.name
+    remote_virtual_network_id = azurerm_virtual_network.example.id
+    allow_forwarded_traffic   = true
+    allow_virtual_network_access = true
 }
