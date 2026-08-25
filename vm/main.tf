@@ -85,9 +85,9 @@ resource "azurerm_linux_virtual_machine" "example" {
   }
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "ubuntu-24_04-lts"
-    sku       = "ubuntu-pro"
+    publisher = "RedHat"
+    offer     = "RHEL"
+    sku       = "10_2-gen2"
     version   = "latest"
   }
 
